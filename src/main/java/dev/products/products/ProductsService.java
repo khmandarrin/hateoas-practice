@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.Principal;
 import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -158,9 +159,13 @@ public class ProductsService {
         return Link.of(href).withRel(rel).withType("GET");
     }
 
-    public ProductResponse updateProduct(Long id, PatchProductRequest request) {
+    public ProductResponse updateProduct(Long id, PatchProductRequest request, Long userId) {
         Product product = productsRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 상품"));
+
+        if (!product.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
+        }
 
         if (request.name() != null) {
             product.setName(request.name());
@@ -217,9 +222,13 @@ public class ProductsService {
         return response;
     }
 
-    public ProductResponse deleteProduct(Long id) {
+    public ProductResponse deleteProduct(Long id, Long userId) {
         Product product = productsRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 상품"));
+
+        if (!product.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "삭제 권한이 없습니다.");
+        }
 
         ProductResponse response = ProductResponse.builder()
                 .id(product.getId())

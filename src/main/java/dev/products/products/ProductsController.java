@@ -89,9 +89,9 @@ public class ProductsController {
     })
     @Operation(summary = "상품 수정", description = "인증된 사용자 중에서 자신이 등록한 상품만 수정 가능")
     public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id,
-                                                         @Valid @RequestBody PatchProductRequest productsRequest) {
+                                                         @Valid @RequestBody PatchProductRequest productsRequest, @AuthenticationPrincipal CustomUserPrincipal principal) {
 
-        ProductResponse productsResponse = productsService.updateProduct(id, productsRequest);
+        ProductResponse productsResponse = productsService.updateProduct(id, productsRequest, principal.getId());
 
         return new ResponseEntity<>(productsResponse, HttpStatus.OK);
     }
@@ -107,9 +107,12 @@ public class ProductsController {
             @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     @Operation(summary = "상품 삭제", description = "인증된 사용자 중에서 자신이 등록한 상품만 삭제 가능")
-    public ResponseEntity<ProductResponse> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<ProductResponse> deleteProduct(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserPrincipal principal
+    ) {
 
-        ProductResponse productResponse = productsService.deleteProduct(id);
+        ProductResponse productResponse = productsService.deleteProduct(id, principal.getId());
 
         return new ResponseEntity<>(productResponse, HttpStatus.OK);
     }
